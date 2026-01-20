@@ -79,6 +79,12 @@ class SearchRequest(BaseModel):
     player: Optional[str] = None
     team: Optional[str] = None
     goal_type: Optional[str] = None
+    year: Optional[str] = None
+    championship: Optional[str] = None
+    historic_goal: bool = False
+    beautiful_goal: bool = False
+    ex_goal: bool = False
+    own_goal: bool = False
     max_results: int = 20
 
 class SearchHistoryItem(BaseModel):
@@ -309,6 +315,30 @@ async def search_goals(
         }
         query_parts.append(goal_type_map.get(search_req.goal_type, search_req.goal_type))
     
+    if search_req.year:
+        query_parts.append(search_req.year)
+    
+    if search_req.championship:
+        championship_map = {
+            "copa do mundo": "world cup",
+            "campeonato nacional": "national league",
+            "libertadores": "copa libertadores",
+            "mundial de clubes": "club world cup",
+            "campeonato regional/estadual": "regional championship",
+            "copa continental": "continental cup"
+        }
+        query_parts.append(championship_map.get(search_req.championship, search_req.championship))
+    
+    # Add flags
+    if search_req.historic_goal:
+        query_parts.append("historic legendary")
+    if search_req.beautiful_goal:
+        query_parts.append("beautiful best amazing")
+    if search_req.ex_goal:
+        query_parts.append("ex player return")
+    if search_req.own_goal:
+        query_parts.append("own goal")
+    
     search_query = " ".join(query_parts)
     
     try:
@@ -351,7 +381,13 @@ async def search_goals(
             "filters": {
                 "player": search_req.player,
                 "team": search_req.team,
-                "goal_type": search_req.goal_type
+                "goal_type": search_req.goal_type,
+                "year": search_req.year,
+                "championship": search_req.championship,
+                "historic_goal": search_req.historic_goal,
+                "beautiful_goal": search_req.beautiful_goal,
+                "ex_goal": search_req.ex_goal,
+                "own_goal": search_req.own_goal
             },
             "results_count": len(results),
             "created_at": datetime.now(timezone.utc)
