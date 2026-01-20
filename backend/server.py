@@ -388,6 +388,165 @@ async def search_goals(
                 "year": search_req.year,
                 "championship": search_req.championship,
                 "historic_goal": search_req.historic_goal,
+
+# User Profile endpoints
+@api_router.get("/profile")
+async def get_profile(current_user: User = Depends(get_current_user)):
+    """Get user profile"""
+    profile = await db.user_profiles.find_one({"user_id": current_user.user_id}, {"_id": 0})
+    if not profile:
+        return {"user_id": current_user.user_id, "full_name": None, "age": None, "address": None, "favorite_team": None, "city": None, "state": None, "country": "Brasil"}
+    return profile
+
+@api_router.put("/profile")
+async def update_profile(profile_data: dict, current_user: User = Depends(get_current_user)):
+    """Update user profile"""
+    profile_doc = {
+        "user_id": current_user.user_id,
+        **profile_data,
+        "updated_at": datetime.now(timezone.utc)
+    }
+    
+    await db.user_profiles.update_one(
+        {"user_id": current_user.user_id},
+        {"$set": profile_doc},
+        upsert=True
+    )
+    
+    return {"message": "Profile updated successfully", "profile": profile_doc}
+
+# Admin endpoints
+@api_router.get("/admin/dashboard")
+async def get_admin_dashboard(current_user: User = Depends(get_current_user)):
+    """Get admin dashboard statistics"""
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Total users
+    total_users = await db.users.count_documents({})
+    
+    # Users today
+    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    users_today = await db.users.count_documents({"created_at": {"$gte": today_start}})
+    
+    # Users this month
+    month_start = datetime.now(timezone.utc).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    users_this_month = await db.users.count_documents({"created_at": {"$gte": month_start}})
+    
+    # Top states
+    pipeline_states = [
+        {"$lookup": {"from": "user_profiles", "localField": "user_id", "foreignField": "user_id", "as": "profile"}},
+        {"$unwind": {"path": "$profile", "preserveNullAndEmptyArrays": True}},
+        {"$group": {"_id": "$profile.state", "count": {"$sum": 1}}},
+        {"$match": {"_id": {"$ne": None}}},
+        {"$sort": {"count": -1}},
+        {"$limit": 5}
+    ]
+    top_states = await db.users.aggregate(pipeline_states).to_list(5)
+    
+    # Top teams
+    pipeline_teams = [
+        {"$lookup": {"from": "user_profiles", "localField": "user_id", "foreignField": "user_id", "as": "profile"}},
+        {"$unwind": {"path": "$profile", "preserveNullAndEmptyArrays": True}},
+        {"$group": {"_id": "$profile.favorite_team", "count": {"$sum": 1}}},
+        {"$match": {"_id": {"$ne": None}}},
+        {"$sort": {"count": -1}},
+        {"$limit": 10}
+    ]
+    top_teams = await db.users.aggregate(pipeline_teams).to_list(10)
+    
+    # Most searched player
+    pipeline_players = [
+        {"$unwind": "$filters"},
+        {"$match": {"filters.player": {"$ne": None}}},
+        {"$group": {"_id": "$filters.player", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+        {"$limit": 10}
+    ]
+    top_players = await db.search_history.aggregate(pipeline_players).to_list(10)
+    
+    # Most searched team
+    pipeline_search_teams = [
+        {"$unwind": "$filters"},
+        {"$match": {"filters.team": {"$ne": None}}},
+        {"$group": {"_id": "$filters.team", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+        {"$limit": 10}
+    ]
+    top_searched_teams = await db.search_history.aggregate(pipeline_search_teams).to_list(10)
+    
+    # Total searches
+    total_searches = await db.search_history.count_documents({})
+    
+    return {
+        "total_users": total_users,
+        "users_today": users_today,
+        "users_this_month": users_this_month,
+        "top_states": top_states,
+        "top_teams": top_teams,
+        "top_players": top_players,
+        "top_searched_teams": top_searched_teams,
+        "total_searches": total_searches
+    }
+
+@api_router.get("/admin/users")
+async def get_all_users_with_details(current_user: User = Depends(get_current_user)):
+    """Get all users with profiles and search history"""
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    pipeline = [
+        {"$lookup": {"from": "user_profiles", "localField": "user_id", "foreignField": "user_id", "as": "profile"}},
+        {"$unwind": {"path": "$profile", "preserveNullAndEmptyArrays": True}},
+        {"$lookup": {"from": "search_history", "localField": "user_id", "foreignField": "user_id", "as": "searches"}},
+        {"$project": {
+            "_id": 0,
+            "password": 0
+        }}
+    ]
+    
+    users = await db.users.aggregate(pipeline).to_list(1000)
+    return users
+
+@api_router.post("/admin/users/{user_id}/reset-password")
+async def reset_user_password(user_id: str, password_data: dict, current_user: User = Depends(get_current_user)):
+    """Reset user password (admin only)"""
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    user = await db.users.find_one({"user_id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    new_password = password_data.get("new_password")
+    if not new_password:
+        raise HTTPException(status_code=400, detail="New password required")
+    
+    hashed_pwd = hash_password(new_password)
+    await db.users.update_one(
+        {"user_id": user_id},
+        {"$set": {"password": hashed_pwd}}
+    )
+    
+    return {"message": "Password reset successfully"}
+
+@api_router.delete("/admin/users/{user_id}")
+async def delete_user_admin(user_id: str, current_user: User = Depends(get_current_user)):
+    """Delete user (admin only)"""
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    result = await db.users.delete_one({"user_id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Delete related data
+    await db.user_profiles.delete_one({"user_id": user_id})
+    await db.user_sessions.delete_many({"user_id": user_id})
+    await db.search_history.delete_many({"user_id": user_id})
+    
+    return {"message": "User deleted successfully"}
+
                 "beautiful_goal": search_req.beautiful_goal,
                 "ex_goal": search_req.ex_goal,
                 "own_goal": search_req.own_goal,
