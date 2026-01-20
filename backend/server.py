@@ -601,35 +601,7 @@ async def delete_user_admin(user_id: str, current_user: User = Depends(get_curre
     
     return {"message": "User deleted successfully"}
 
-                "beautiful_goal": search_req.beautiful_goal,
-                "ex_goal": search_req.ex_goal,
-                "own_goal": search_req.own_goal,
-                "only_this_player": search_req.only_this_player
-            },
-            "results_count": len(results),
-            "created_at": datetime.now(timezone.utc)
-        }
-        background_tasks.add_task(db.search_history.insert_one, history_doc)
-        
-        return results
-    
-    except HttpError as e:
-        logger.error(f"YouTube API error: {e}")
-        if "quotaExceeded" in str(e):
-            raise HTTPException(status_code=429, detail="YouTube API quota exceeded")
-        raise HTTPException(status_code=400, detail="Error searching videos")
-
-@api_router.get("/goals/history", response_model=List[SearchHistoryItem])
-async def get_search_history(current_user: User = Depends(get_current_user)):
-    """Get user's search history"""
-    history = await db.search_history.find(
-        {"user_id": current_user.user_id},
-        {"_id": 0}
-    ).sort("created_at", -1).limit(50).to_list(50)
-    
-    return [SearchHistoryItem(**item) for item in history]
-
-# Admin endpoints
+# Admin endpoints - Duplicate removed
 @api_router.get("/admin/users", response_model=List[User])
 async def get_all_users(current_user: User = Depends(get_current_user)):
     if not current_user.is_admin:
