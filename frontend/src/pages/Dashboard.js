@@ -103,7 +103,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen" style={{ background: '#09090b' }}>
       {/* Header */}
-      <header className="border-b border-[#27272a] bg-[#09090b] sticky top-0 z-50">
+      <header className="border-b border-[#27272a] bg-[#09090b] sticky top-0 z-40">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-black" style={{ 
