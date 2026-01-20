@@ -422,6 +422,7 @@ const Dashboard = () => {
                       setBeautifulGoal(item.filters.beautiful_goal || false);
                       setExGoal(item.filters.ex_goal || false);
                       setOwnGoal(item.filters.own_goal || false);
+                      setOnlyThisPlayer(item.filters.only_this_player || false);
                       setShowHistory(false);
                     }}
                     data-testid={`history-item-${index}`}
@@ -537,9 +538,8 @@ const Dashboard = () => {
 
       {/* Profile Modal */}
       <ProfileModal 
-        isOpen={showProfile} 
+        open={showProfile} 
         onClose={() => setShowProfile(false)} 
-        user={user} 
       />
     </div>
   );
