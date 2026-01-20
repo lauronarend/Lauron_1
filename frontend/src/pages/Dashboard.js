@@ -6,7 +6,10 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
-import { Search, LogOut, History, X } from 'lucide-react';
+import { Checkbox } from '../components/ui/checkbox';
+import { Label } from '../components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import { Search, LogOut, History, X, Play } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
 import { motion } from 'framer-motion';
@@ -23,10 +26,18 @@ const Dashboard = () => {
   const [player, setPlayer] = useState('');
   const [team, setTeam] = useState('');
   const [goalType, setGoalType] = useState('');
+  const [year, setYear] = useState('');
+  const [championship, setChampionship] = useState('');
+  const [historicGoal, setHistoricGoal] = useState(false);
+  const [beautifulGoal, setBeautifulGoal] = useState(false);
+  const [exGoal, setExGoal] = useState(false);
+  const [ownGoal, setOwnGoal] = useState(false);
+  
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchHistory, setSearchHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState(null);
 
   useEffect(() => {
     if (!user) {
@@ -68,6 +79,12 @@ const Dashboard = () => {
           player: player || null,
           team: team || null,
           goal_type: goalType || null,
+          year: year || null,
+          championship: championship || null,
+          historic_goal: historicGoal,
+          beautiful_goal: beautifulGoal,
+          ex_goal: exGoal,
+          own_goal: ownGoal,
           max_results: 20
         },
         {
@@ -96,7 +113,15 @@ const Dashboard = () => {
     setPlayer('');
     setTeam('');
     setGoalType('');
+    setYear('');
+    setChampionship('');
+    setHistoricGoal(false);
+    setBeautifulGoal(false);
+    setExGoal(false);
+    setOwnGoal(false);
   };
+
+  const hasFilters = player || team || goalType || year || championship || historicGoal || beautifulGoal || exGoal || ownGoal;
 
   if (!user) return null;
 
@@ -146,7 +171,7 @@ const Dashboard = () => {
 
       <div className="container mx-auto px-4 py-8">
         {/* Search Section */}
-        <div className="max-w-5xl mx-auto mb-12">
+        <div className="max-w-6xl mx-auto mb-12">
           <h2 className="text-3xl font-black mb-2 text-white" style={{ fontFamily: '"Barlow Condensed", sans-serif' }}>
             BEM-VINDO, {user.name.toUpperCase()}
           </h2>
@@ -171,8 +196,8 @@ const Dashboard = () => {
               />
             </div>
 
-            {/* Filters */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* Basic Filters */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <Input
                 data-testid="player-filter-input"
                 type="text"
@@ -189,19 +214,115 @@ const Dashboard = () => {
                 value={team}
                 onChange={(e) => setTeam(e.target.value)}
               />
+              <Input
+                data-testid="year-filter-input"
+                type="text"
+                placeholder="Ano (ex: 2010)"
+                className="bg-[#27272a] border-[#3f3f46] text-white h-12"
+                value={year}
+                onChange={(e) => setYear(e.target.value)}
+              />
               <Select value={goalType} onValueChange={setGoalType}>
                 <SelectTrigger data-testid="goal-type-filter" className="bg-[#27272a] border-[#3f3f46] text-white h-12">
                   <SelectValue placeholder="Tipo de Gol" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#18181b] border-[#27272a]">
-                  <SelectItem value="bicicleta">Bicicleta</SelectItem>
-                  <SelectItem value="cabeça">Cabeça</SelectItem>
-                  <SelectItem value="fora da área">Fora da Área</SelectItem>
-                  <SelectItem value="pé-esquerdo">Pé Esquerdo</SelectItem>
-                  <SelectItem value="pé-direito">Pé Direito</SelectItem>
+                <SelectContent className="bg-[#27272a] border-[#3f3f46]">
+                  <SelectItem value="bicicleta" className="text-white hover:bg-[#3f3f46] focus:bg-[#3f3f46] focus:text-white">Bicicleta</SelectItem>
+                  <SelectItem value="cabeça" className="text-white hover:bg-[#3f3f46] focus:bg-[#3f3f46] focus:text-white">Cabeça</SelectItem>
+                  <SelectItem value="fora da área" className="text-white hover:bg-[#3f3f46] focus:bg-[#3f3f46] focus:text-white">Fora da Área</SelectItem>
+                  <SelectItem value="pé-esquerdo" className="text-white hover:bg-[#3f3f46] focus:bg-[#3f3f46] focus:text-white">Pé Esquerdo</SelectItem>
+                  <SelectItem value="pé-direito" className="text-white hover:bg-[#3f3f46] focus:bg-[#3f3f46] focus:text-white">Pé Direito</SelectItem>
                 </SelectContent>
               </Select>
-              {(player || team || goalType) && (
+            </div>
+
+            {/* Championship Filter */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Select value={championship} onValueChange={setChampionship}>
+                <SelectTrigger data-testid="championship-filter" className="bg-[#27272a] border-[#3f3f46] text-white h-12">
+                  <SelectValue placeholder="Campeonato" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#27272a] border-[#3f3f46]">
+                  <SelectItem value="copa do mundo" className="text-white hover:bg-[#3f3f46] focus:bg-[#3f3f46] focus:text-white">Copa do Mundo</SelectItem>
+                  <SelectItem value="campeonato nacional" className="text-white hover:bg-[#3f3f46] focus:bg-[#3f3f46] focus:text-white">Campeonato Nacional</SelectItem>
+                  <SelectItem value="libertadores" className="text-white hover:bg-[#3f3f46] focus:bg-[#3f3f46] focus:text-white">Libertadores</SelectItem>
+                  <SelectItem value="mundial de clubes" className="text-white hover:bg-[#3f3f46] focus:bg-[#3f3f46] focus:text-white">Mundial de Clubes</SelectItem>
+                  <SelectItem value="campeonato regional/estadual" className="text-white hover:bg-[#3f3f46] focus:bg-[#3f3f46] focus:text-white">Campeonato Regional/Estadual</SelectItem>
+                  <SelectItem value="copa continental" className="text-white hover:bg-[#3f3f46] focus:bg-[#3f3f46] focus:text-white">Copa Continental</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Flags */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-[#18181b] border border-[#27272a] rounded">
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="historic" 
+                  checked={historicGoal} 
+                  onCheckedChange={setHistoricGoal}
+                  data-testid="historic-goal-checkbox"
+                  className="border-gray-400"
+                />
+                <Label htmlFor="historic" className="text-white text-sm cursor-pointer">
+                  Gol Histórico
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="beautiful" 
+                  checked={beautifulGoal} 
+                  onCheckedChange={setBeautifulGoal}
+                  data-testid="beautiful-goal-checkbox"
+                  className="border-gray-400"
+                />
+                <Label htmlFor="beautiful" className="text-white text-sm cursor-pointer">
+                  Gol Mais Bonito
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="ex" 
+                  checked={exGoal} 
+                  onCheckedChange={setExGoal}
+                  data-testid="ex-goal-checkbox"
+                  className="border-gray-400"
+                />
+                <Label htmlFor="ex" className="text-white text-sm cursor-pointer">
+                  Gol do Ex
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="own" 
+                  checked={ownGoal} 
+                  onCheckedChange={setOwnGoal}
+                  data-testid="own-goal-checkbox"
+                  className="border-gray-400"
+                />
+                <Label htmlFor="own" className="text-white text-sm cursor-pointer">
+                  Gol Contra
+                </Label>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-4">
+              <Button
+                data-testid="search-submit-button"
+                type="submit"
+                className="h-12 px-8 font-bold uppercase tracking-wide"
+                style={{
+                  background: currentKit?.primary || '#FFDF00',
+                  color: currentKit?.primaryForeground || '#009C3B',
+                  transform: 'skewX(-10deg)'
+                }}
+                disabled={loading}
+              >
+                <span style={{ transform: 'skewX(10deg)', display: 'block' }}>
+                  {loading ? 'Buscando...' : 'Buscar'}
+                </span>
+              </Button>
+              {hasFilters && (
                 <Button
                   data-testid="clear-filters-button"
                   type="button"
@@ -210,26 +331,10 @@ const Dashboard = () => {
                   className="text-gray-400 hover:text-white"
                 >
                   <X className="h-4 w-4 mr-2" />
-                  Limpar
+                  Limpar Filtros
                 </Button>
               )}
             </div>
-
-            <Button
-              data-testid="search-submit-button"
-              type="submit"
-              className="w-full md:w-auto h-12 px-8 font-bold uppercase tracking-wide"
-              style={{
-                background: currentKit?.primary || '#FFDF00',
-                color: currentKit?.primaryForeground || '#009C3B',
-                transform: 'skewX(-10deg)'
-              }}
-              disabled={loading}
-            >
-              <span style={{ transform: 'skewX(10deg)', display: 'block' }}>
-                {loading ? 'Buscando...' : 'Buscar'}
-              </span>
-            </Button>
           </form>
         </div>
 
@@ -264,6 +369,12 @@ const Dashboard = () => {
                       setPlayer(item.filters.player || '');
                       setTeam(item.filters.team || '');
                       setGoalType(item.filters.goal_type || '');
+                      setYear(item.filters.year || '');
+                      setChampionship(item.filters.championship || '');
+                      setHistoricGoal(item.filters.historic_goal || false);
+                      setBeautifulGoal(item.filters.beautiful_goal || false);
+                      setExGoal(item.filters.ex_goal || false);
+                      setOwnGoal(item.filters.own_goal || false);
                       setShowHistory(false);
                     }}
                     data-testid={`history-item-${index}`}
@@ -294,31 +405,29 @@ const Dashboard = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: index * 0.05 }}
-                  className="bg-[#18181b] overflow-hidden hover:scale-105 transition-transform duration-300"
+                  className="bg-[#18181b] overflow-hidden hover:scale-105 transition-transform duration-300 cursor-pointer"
                   data-testid={`video-card-${index}`}
+                  onClick={() => setSelectedVideo(video)}
                 >
-                  <a 
-                    href={`https://www.youtube.com/watch?v=${video.video_id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <div className="relative aspect-video overflow-hidden">
-                      <img 
-                        src={video.thumbnail_url} 
-                        alt={video.title}
-                        className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                  <div className="relative aspect-video overflow-hidden group">
+                    <img 
+                      src={video.thumbnail_url} 
+                      alt={video.title}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Play className="h-16 w-16 text-white" style={{ color: currentKit?.primary || '#FFDF00' }} />
                     </div>
-                    <div className="p-4">
-                      <h4 className="text-white font-bold mb-2 line-clamp-2" style={{ fontFamily: '"Chivo", sans-serif' }}>
-                        {video.title}
-                      </h4>
-                      <p className="text-gray-400 text-sm" style={{ fontFamily: '"Chivo", sans-serif' }}>
-                        {video.channel_title}
-                      </p>
-                    </div>
-                  </a>
+                  </div>
+                  <div className="p-4">
+                    <h4 className="text-white font-bold mb-2 line-clamp-2" style={{ fontFamily: '"Chivo", sans-serif' }}>
+                      {video.title}
+                    </h4>
+                    <p className="text-gray-400 text-sm" style={{ fontFamily: '"Chivo", sans-serif' }}>
+                      {video.channel_title}
+                    </p>
+                  </div>
                 </motion.div>
               ))}
             </div>
@@ -337,6 +446,47 @@ const Dashboard = () => {
           </div>
         )}
       </div>
+
+      {/* Video Modal */}
+      <Dialog open={!!selectedVideo} onOpenChange={() => setSelectedVideo(null)}>
+        <DialogContent className="max-w-4xl bg-[#18181b] border-[#27272a]">
+          <DialogHeader>
+            <DialogTitle className="text-white" style={{ fontFamily: '"Barlow Condensed", sans-serif' }}>
+              {selectedVideo?.title}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="aspect-video w-full">
+            {selectedVideo && (
+              <iframe
+                width="100%"
+                height="100%"
+                src={`https://www.youtube.com/embed/${selectedVideo.video_id}?autoplay=1`}
+                title={selectedVideo.title}
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            )}
+          </div>
+          <div className="mt-4">
+            <p className="text-gray-400 text-sm" style={{ fontFamily: '"Chivo", sans-serif' }}>
+              Canal: {selectedVideo?.channel_title}
+            </p>
+            <p className="text-gray-400 text-sm mt-2" style={{ fontFamily: '"Chivo", sans-serif' }}>
+              {selectedVideo?.description?.substring(0, 200)}...
+            </p>
+            <a 
+              href={`https://www.youtube.com/watch?v=${selectedVideo?.video_id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block mt-4 text-sm"
+              style={{ color: currentKit?.primary || '#FFDF00' }}
+            >
+              Abrir no YouTube →
+            </a>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
