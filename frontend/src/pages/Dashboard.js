@@ -161,21 +161,44 @@ const Dashboard = () => {
                 <History className="h-5 w-5 mr-2" />
                 Histórico
               </Button>
-              <Avatar data-testid="user-avatar">
-                <AvatarImage src={user.picture} />
-                <AvatarFallback className="bg-[#27272a]" style={{ color: currentKit?.primary || '#FFDF00' }}>
-                  {user.name.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <Button
-                data-testid="logout-button"
-                variant="ghost"
-                size="sm"
-                onClick={handleLogout}
-                className="text-gray-400 hover:text-white"
-              >
-                <LogOut className="h-5 w-5" />
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Avatar data-testid="user-avatar" className="cursor-pointer">
+                    <AvatarImage src={user.picture} />
+                    <AvatarFallback className="bg-[#27272a]" style={{ color: currentKit?.primary || '#FFDF00' }}>
+                      {user.name.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-[#18181b] border-[#27272a] text-white" align="end">
+                  <DropdownMenuItem 
+                    data-testid="complete-profile-menu"
+                    className="cursor-pointer hover:bg-[#27272a] focus:bg-[#27272a] focus:text-white"
+                    onClick={() => setShowProfile(true)}
+                  >
+                    <User className="h-4 w-4 mr-2" />
+                    Completar Cadastro
+                  </DropdownMenuItem>
+                  {user.is_admin && (
+                    <DropdownMenuItem 
+                      data-testid="admin-panel-menu"
+                      className="cursor-pointer hover:bg-[#27272a] focus:bg-[#27272a] focus:text-white"
+                      onClick={() => navigate('/admin')}
+                    >
+                      <Settings className="h-4 w-4 mr-2" />
+                      Painel Admin
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem 
+                    data-testid="logout-menu"
+                    className="cursor-pointer hover:bg-[#27272a] focus:bg-[#27272a] focus:text-white"
+                    onClick={handleLogout}
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sair
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>
