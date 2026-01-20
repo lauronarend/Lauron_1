@@ -64,8 +64,14 @@ const Dashboard = () => {
 
   const handleSearch = async (e) => {
     e.preventDefault();
-    if (!searchQuery.trim()) {
-      toast.error('Digite algo para buscar');
+    
+    // Verificar se há pelo menos um campo preenchido
+    const hasAnyFilter = searchQuery.trim() || player.trim() || team.trim() || 
+                         goalType || year.trim() || championship || 
+                         historicGoal || beautifulGoal || exGoal || ownGoal;
+    
+    if (!hasAnyFilter) {
+      toast.error('Preencha pelo menos um campo ou selecione um filtro para buscar');
       return;
     }
 
@@ -75,7 +81,7 @@ const Dashboard = () => {
       const response = await axios.post(
         `${API}/goals/search`,
         {
-          query: searchQuery,
+          query: searchQuery || "gol goal",
           player: player || null,
           team: team || null,
           goal_type: goalType || null,
@@ -189,7 +195,7 @@ const Dashboard = () => {
               <Input
                 data-testid="dashboard-search-input"
                 type="text"
-                placeholder="Buscar gols (ex: Pelé, Barcelona, gol de bicicleta...)"
+                placeholder="Buscar gols (opcional se usar filtros abaixo)"
                 className="w-full h-14 pl-12 bg-[#27272a] border-[#3f3f46] text-white"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
