@@ -9,10 +9,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Checkbox } from '../components/ui/checkbox';
 import { Label } from '../components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
-import { Search, LogOut, History, X, Play } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../components/ui/dropdown-menu';
+import { Search, LogOut, History, X, Play, User, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
 import { motion } from 'framer-motion';
+import ProfileModal from '../components/ProfileModal';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -32,12 +34,14 @@ const Dashboard = () => {
   const [beautifulGoal, setBeautifulGoal] = useState(false);
   const [exGoal, setExGoal] = useState(false);
   const [ownGoal, setOwnGoal] = useState(false);
+  const [onlyThisPlayer, setOnlyThisPlayer] = useState(false);
   
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchHistory, setSearchHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
+  const [showProfile, setShowProfile] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -68,7 +72,7 @@ const Dashboard = () => {
     // Verificar se há pelo menos um campo preenchido
     const hasAnyFilter = searchQuery.trim() || player.trim() || team.trim() || 
                          goalType || year.trim() || championship || 
-                         historicGoal || beautifulGoal || exGoal || ownGoal;
+                         historicGoal || beautifulGoal || exGoal || ownGoal || onlyThisPlayer;
     
     if (!hasAnyFilter) {
       toast.error('Preencha pelo menos um campo ou selecione um filtro para buscar');
@@ -91,6 +95,7 @@ const Dashboard = () => {
           beautiful_goal: beautifulGoal,
           ex_goal: exGoal,
           own_goal: ownGoal,
+          only_this_player: onlyThisPlayer,
           max_results: 20
         },
         {
@@ -125,9 +130,10 @@ const Dashboard = () => {
     setBeautifulGoal(false);
     setExGoal(false);
     setOwnGoal(false);
+    setOnlyThisPlayer(false);
   };
 
-  const hasFilters = player || team || goalType || year || championship || historicGoal || beautifulGoal || exGoal || ownGoal;
+  const hasFilters = player || team || goalType || year || championship || historicGoal || beautifulGoal || exGoal || ownGoal || onlyThisPlayer;
 
   if (!user) return null;
 
