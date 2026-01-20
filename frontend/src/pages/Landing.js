@@ -22,6 +22,8 @@ const Landing = () => {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate('/login', { state: { searchQuery } });
+    } else {
+      navigate('/login');
     }
   };
 
@@ -108,8 +110,8 @@ const Landing = () => {
               <input
                 type="text"
                 data-testid="hero-search-input"
-                placeholder="Buscar por jogador, time ou tipo de gol..."
-                className="w-full h-16 pl-16 pr-6 rounded-none bg-[#27272a] border-2 text-white text-lg"
+                placeholder="Faça login para buscar gols..."
+                className="w-full h-16 pl-16 pr-6 rounded-none bg-[#27272a] border-2 text-white text-lg cursor-pointer"
                 style={{ 
                   borderColor: currentKit?.primary || '#FFDF00',
                   fontFamily: '"Chivo", sans-serif',
@@ -117,6 +119,8 @@ const Landing = () => {
                 }}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onClick={() => navigate('/login')}
+                readOnly
               />
             </div>
             <Button
@@ -128,9 +132,10 @@ const Landing = () => {
                 color: currentKit?.primaryForeground || '#009C3B',
                 transform: 'skewX(-10deg)'
               }}
+              onClick={() => navigate('/login')}
             >
               <span style={{ transform: 'skewX(10deg)', display: 'block' }}>
-                Buscar Agora
+                Fazer Login
               </span>
             </Button>
           </motion.form>
