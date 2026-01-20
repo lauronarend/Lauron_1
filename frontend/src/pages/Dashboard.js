@@ -289,7 +289,7 @@ const Dashboard = () => {
             </div>
 
             {/* Flags */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-[#18181b] border border-[#27272a] rounded">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 p-4 bg-[#18181b] border border-[#27272a] rounded">
               <div className="flex items-center space-x-2">
                 <Checkbox 
                   id="historic" 
@@ -336,6 +336,18 @@ const Dashboard = () => {
                 />
                 <Label htmlFor="own" className="text-white text-sm cursor-pointer">
                   Gol Contra
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="onlyPlayer" 
+                  checked={onlyThisPlayer} 
+                  onCheckedChange={setOnlyThisPlayer}
+                  data-testid="only-player-checkbox"
+                  className="border-gray-400"
+                />
+                <Label htmlFor="onlyPlayer" className="text-white text-sm cursor-pointer">
+                  Apenas Esse Jogador
                 </Label>
               </div>
             </div>
