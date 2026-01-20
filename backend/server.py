@@ -84,6 +84,33 @@ class SearchRequest(BaseModel):
     historic_goal: bool = False
     beautiful_goal: bool = False
     ex_goal: bool = False
+
+
+# Create admin user on startup
+@app.on_event("startup")
+async def create_admin_user():
+    admin_email = "admin@goltube.com"
+    admin_password = "Admin@GolTube2025"
+    
+    # Check if admin exists
+    admin_user = await db.users.find_one({"email": admin_email})
+    if not admin_user:
+        user_id = f"user_{uuid.uuid4().hex[:12]}"
+        hashed_pwd = hash_password(admin_password)
+        
+        admin_doc = {
+            "user_id": user_id,
+            "email": admin_email,
+            "name": "Administrador",
+            "password": hashed_pwd,
+            "picture": None,
+            "is_admin": True,
+            "created_at": datetime.now(timezone.utc)
+        }
+        
+        await db.users.insert_one(admin_doc)
+        logger.info(f"Admin user created: {admin_email} / {admin_password}")
+
     own_goal: bool = False
     only_this_player: bool = False
     max_results: int = 20
