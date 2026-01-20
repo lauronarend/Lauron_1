@@ -85,6 +85,7 @@ class SearchRequest(BaseModel):
     beautiful_goal: bool = False
     ex_goal: bool = False
     own_goal: bool = False
+    only_this_player: bool = False
     max_results: int = 20
 
 class SearchHistoryItem(BaseModel):
@@ -331,13 +332,15 @@ async def search_goals(
     
     # Add flags
     if search_req.historic_goal:
-        query_parts.append("historic legendary")
+        query_parts.append("historic legendary iconic")
     if search_req.beautiful_goal:
-        query_parts.append("beautiful best amazing")
+        query_parts.append("beautiful best amazing incredible")
     if search_req.ex_goal:
-        query_parts.append("ex player return")
+        query_parts.append("ex player return against former")
     if search_req.own_goal:
         query_parts.append("own goal")
+    if search_req.only_this_player and search_req.player:
+        query_parts.append(f"{search_req.player} solo individual")
     
     search_query = " ".join(query_parts)
     
@@ -387,7 +390,8 @@ async def search_goals(
                 "historic_goal": search_req.historic_goal,
                 "beautiful_goal": search_req.beautiful_goal,
                 "ex_goal": search_req.ex_goal,
-                "own_goal": search_req.own_goal
+                "own_goal": search_req.own_goal,
+                "only_this_player": search_req.only_this_player
             },
             "results_count": len(results),
             "created_at": datetime.now(timezone.utc)
