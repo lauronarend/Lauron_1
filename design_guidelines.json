@@ -1,0 +1,127 @@
+{
+  "identity": {
+    "name": "GolTube",
+    "metaphor": "The Digital Stadium",
+    "emotion": "Electric, Passionate, Dynamic, Nostalgic",
+    "design_principle": "Every interaction feels like a highlight reel."
+  },
+  "typography": {
+    "headings": {
+      "font_family": "\"Barlow Condensed\", sans-serif",
+      "weights": ["700", "800", "900"],
+      "usage": "Use for all section titles, video titles, and big stats. Letter-spacing should be tight (-0.02em).",
+      "import_url": "https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Chivo:wght@400;500;700&display=swap"
+    },
+    "body": {
+      "font_family": "\"Chivo\", sans-serif",
+      "weights": ["400", "500", "700"],
+      "usage": "Use for descriptions, metadata, and UI elements. It has a tech-sport hybrid feel."
+    }
+  },
+  "colors": {
+    "strategy": "Dynamic Kit System",
+    "description": "The site changes its 'Jersey' (color theme) on every session. Base is always Dark Mode (Night Match).",
+    "base_theme": {
+      "background": "#09090b",
+      "foreground": "#fafafa",
+      "card": "#18181b",
+      "card_foreground": "#fafafa",
+      "border": "#27272a"
+    },
+    "kits": [
+      {
+        "name": "canary",
+        "primary": "#FFDF00",
+        "primary_foreground": "#009C3B",
+        "accent": "#009C3B"
+      },
+      {
+        "name": "celeste",
+        "primary": "#75AADB",
+        "primary_foreground": "#FFFFFF",
+        "accent": "#FFFFFF"
+      },
+      {
+        "name": "furia",
+        "primary": "#AA151B",
+        "primary_foreground": "#F1BF00",
+        "accent": "#F1BF00"
+      },
+      {
+        "name": "les_bleus",
+        "primary": "#002395",
+        "primary_foreground": "#FFFFFF",
+        "accent": "#EF4135"
+      },
+      {
+        "name": "die_mannschaft",
+        "primary": "#FFFFFF",
+        "primary_foreground": "#000000",
+        "accent": "#FFCC00"
+      }
+    ],
+    "instructions": "Implement a ThemeContext that randomly picks a 'kit' on mount and sets the CSS variables (--primary, --accent) accordingly."
+  },
+  "visual_enhancers": {
+    "textures": {
+      "noise": "Overlay a subtle noise texture (opacity 0.03) on the background to simulate stadium atmosphere/grain.",
+      "mesh": "Use a 'Jersey Mesh' pattern for card backgrounds or hover states."
+    },
+    "borders": {
+      "style": "Sharp or Pill-shaped. Avoid standard 4px/8px radius. Go for 0px (Brutalist Sport) or 9999px (Stadium Shape).",
+      "active_state": "Active inputs/cards should have a 'Glow' effect matching the current Kit's primary color."
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "Solid color (Kit Primary), Text (Kit Foreground), Uppercase, Bold, Tracking-wide. Shape: Skewed -10deg for speed illusion.",
+      "secondary": "Outline (Kit Primary), Text (Kit Primary), Uppercase."
+    },
+    "cards": {
+      "video_card": "Aspect ratio 16:9. No padding. Image full width. Metadata overlay on bottom gradient. Hover: Image scales 1.05x.",
+      "stat_card": "Dark background (#18181b), Border-left 4px solid var(--primary). Big number font."
+    },
+    "inputs": {
+      "search_bar": "Massive height (h-14 or h-16). Background #27272a. Text White. Icon: Search icon in Primary Color."
+    }
+  },
+  "layout": {
+    "grid_system": "Masonry or Bento Grid for video results. Avoid uniform rows.",
+    "spacing": "Generous. Use gap-6 or gap-8. Section padding py-12 or py-16.",
+    "container": "Max-width 1400px (Wide view for video content)."
+  },
+  "motion": {
+    "page_load": "Staggered fade-in-up for grid items (0.1s delay per item).",
+    "hover": "Instant feedback. Scale up, brightness up, or border glow.",
+    "transitions": "Use 'ease-out-expo' for snappy, sporty feel."
+  },
+  "media": {
+    "image_urls": {
+      "hero_bg": "https://images.unsplash.com/photo-1761396677022-3678bcb336f0?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "community_bg": "https://images.unsplash.com/photo-1766756467595-fd3f1f62d562?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "player_action": "https://images.unsplash.com/photo-1757032542654-bc0948131a35?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "match_action": "https://images.unsplash.com/photo-1752614654887-0b8d59c076b0?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "abstract_speed": "https://images.unsplash.com/photo-1743456125223-94a00b108e3e?crop=entropy&cs=srgb&fm=jpg&q=85"
+    }
+  },
+  "instructions_to_main_agent": [
+    "1. Install 'lucide-react' for icons.",
+    "2. Create a 'ThemeContext.js' to handle the random kit selection.",
+    "3. Update 'index.css' to support the dynamic variables.",
+    "4. Use 'Barlow Condensed' for all headings (h1-h6).",
+    "5. Ensure the Search Bar is the most prominent element on the Landing Page.",
+    "6. Use the provided image URLs for placeholders.",
+    "7. Implement a 'Dark Mode' by default. The 'Light Mode' should only be an option if requested, but optimize for Dark.",
+    "8. For the 'Goal Type' filter, use icons or small illustrations if possible.",
+    "9. Ensure the 'History' dashboard looks like a 'Match Report' or 'Season Stats' page."
+  ],
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "Do not use generic gradients. Use solid, bold colors.",
+    "Avoid 'Inter' font for headings. Use the specified 'Barlow Condensed'.",
+    "Make sure the video player container is responsive (aspect-video).",
+    "Use 'sonner' for notifications (e.g., 'Added to Favorites').",
+    "All interactive elements must have 'data-testid'.",
+    "Do not center text in cards; left-align for better readability.",
+    "Use 'framer-motion' for the page transitions if possible, or simple CSS transitions."
+  ]
+}
