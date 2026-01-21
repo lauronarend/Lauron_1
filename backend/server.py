@@ -773,6 +773,118 @@ async def get_admin_dashboard(current_user: User = Depends(get_current_user)):
     
     # Total users
     total_users = await db.users.count_documents({})
+
+
+@api_router.get("/admin/export-csv")
+async def export_users_csv(current_user: User = Depends(get_current_user)):
+    """Export all users data to CSV"""
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    csv_content = await generate_users_csv()
+    
+    from fastapi.responses import StreamingResponse
+    return StreamingResponse(
+        io.StringIO(csv_content),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename=usuarios_{datetime.now().strftime('%Y%m%d')}.csv"}
+    )
+
+@api_router.post("/admin/email-settings")
+async def save_email_settings(settings: dict, current_user: User = Depends(get_current_user)):
+    """Save email report settings"""
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    email_to = settings.get('email_to')
+    send_daily = settings.get('send_daily', False)
+    send_weekly = settings.get('send_weekly', False)
+    send_monthly = settings.get('send_monthly', False)
+    
+    if not email_to:
+        raise HTTPException(status_code=400, detail="Email is required")
+    
+    # Save settings to database
+    await db.admin_settings.update_one(
+        {"setting_type": "email_reports"},
+        {"$set": {
+            "email_to": email_to,
+            "send_daily": send_daily,
+            "send_weekly": send_weekly,
+            "send_monthly": send_monthly,
+            "updated_at": datetime.now(timezone.utc)
+        }},
+        upsert=True
+    )
+    
+    # Remove existing jobs
+    for job in scheduler.get_jobs():
+        if job.id.startswith('report_'):
+            scheduler.remove_job(job.id)
+    
+    # Schedule new jobs
+    if send_daily:
+        scheduler.add_job(
+            scheduled_report_job,
+            CronTrigger(hour=23, minute=59),
+            args=[email_to],
+            id='report_daily',
+            replace_existing=True
+        )
+        logger.info(f"Scheduled daily report to {email_to}")
+    
+    if send_weekly:
+        scheduler.add_job(
+            scheduled_report_job,
+            CronTrigger(day_of_week='sun', hour=23, minute=59),
+            args=[email_to],
+            id='report_weekly',
+            replace_existing=True
+        )
+        logger.info(f"Scheduled weekly report to {email_to}")
+    
+    if send_monthly:
+        scheduler.add_job(
+            scheduled_report_job,
+            CronTrigger(day='last', hour=23, minute=59),
+            args=[email_to],
+            id='report_monthly',
+            replace_existing=True
+        )
+        logger.info(f"Scheduled monthly report to {email_to}")
+    
+    return {"message": "Email settings saved successfully"}
+
+@api_router.get("/admin/email-settings")
+async def get_email_settings(current_user: User = Depends(get_current_user)):
+    """Get email report settings"""
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    settings = await db.admin_settings.find_one({"setting_type": "email_reports"}, {"_id": 0})
+    if not settings:
+        return {"email_to": "", "send_daily": False, "send_weekly": False, "send_monthly": False}
+    
+    return settings
+
+@api_router.post("/admin/send-report-now")
+async def send_report_now(data: dict, current_user: User = Depends(get_current_user)):
+    """Send report immediately"""
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    email_to = data.get('email_to')
+    if not email_to:
+        raise HTTPException(status_code=400, detail="Email is required")
+    
+    csv_content = await generate_users_csv()
+    success = await send_report_email(email_to, csv_content)
+    
+    if success:
+        return {"message": "Report sent successfully"}
+    else:
+        raise HTTPException(status_code=500, detail="Failed to send email")
+
     
     # Users today
     today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
