@@ -135,11 +135,11 @@ const Login = () => {
                     type="button"
                     data-testid="google-login-button"
                     variant="outline"
-                    className="w-full h-12 border-[#27272a] hover:bg-[#27272a]"
+                    className="w-full h-12 border-[#27272a] hover:bg-[#27272a] text-white"
                     onClick={handleGoogleLogin}
                   >
                     <FcGoogle className="mr-2 h-5 w-5" />
-                    Entrar com Google
+                    <span className="text-white">Entrar com Google</span>
                   </Button>
                 </CardFooter>
               </form>
@@ -222,11 +222,11 @@ const Login = () => {
                     type="button"
                     data-testid="google-register-button"
                     variant="outline"
-                    className="w-full h-12 border-[#27272a] hover:bg-[#27272a]"
+                    className="w-full h-12 border-[#27272a] hover:bg-[#27272a] text-white"
                     onClick={handleGoogleLogin}
                   >
                     <FcGoogle className="mr-2 h-5 w-5" />
-                    Continuar com Google
+                    <span className="text-white">Continuar com Google</span>
                   </Button>
                 </CardFooter>
               </form>
