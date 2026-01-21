@@ -12,6 +12,7 @@ class UserProfile(BaseModel):
     city: Optional[str] = None
     state: Optional[str] = None
     country: Optional[str] = None
+    whatsapp_number: Optional[str] = None
     updated_at: datetime
 
 class UserProfileUpdate(BaseModel):
@@ -22,6 +23,7 @@ class UserProfileUpdate(BaseModel):
     city: Optional[str] = None
     state: Optional[str] = None
     country: Optional[str] = "Brasil"
+    whatsapp_number: Optional[str] = None
 
 class PasswordReset(BaseModel):
     new_password: str
