@@ -487,17 +487,46 @@ async def search_goals(
     search_query = " ".join(query_parts)
     
     try:
+        # Buscar mais vídeos para depois filtrar com IA
         request = youtube.search().list(
             part="snippet",
             q=search_query,
             type="video",
-            maxResults=search_req.max_results,
+            maxResults=min(search_req.max_results * 2, 50),  # Busca 2x mais para filtrar
             order="relevance",
             videoCategoryId="17"  # Sports category
         )
         response = request.execute()
         
-        results = []
+        # Preparar critérios para análise IA
+        search_criteria = {
+            "player": search_req.player,
+            "team": search_req.team,
+            "goal_type": search_req.goal_type,
+            "year": search_req.year,
+            "championship": search_req.championship,
+            "historic_goal": search_req.historic_goal,
+            "beautiful_goal": search_req.beautiful_goal,
+            "ex_goal": search_req.ex_goal,
+            "own_goal": search_req.own_goal,
+            "only_this_player": search_req.only_this_player
+        }
+        
+        # Verificar se há critérios específicos que requerem análise IA
+        needs_ai_filtering = any([
+            search_req.player,
+            search_req.team,
+            search_req.goal_type,
+            search_req.year,
+            search_req.championship,
+            search_req.historic_goal,
+            search_req.beautiful_goal,
+            search_req.ex_goal,
+            search_req.own_goal,
+            search_req.only_this_player
+        ])
+        
+        all_videos = []
         for item in response.get("items", []):
             video = VideoResult(
                 video_id=item["id"]["videoId"],
@@ -507,9 +536,40 @@ async def search_goals(
                 channel_title=item["snippet"]["channelTitle"],
                 published_at=item["snippet"]["publishedAt"]
             )
-            results.append(video)
+            all_videos.append(video)
+        
+        # Aplicar filtro inteligente com IA se necessário
+        results = []
+        if needs_ai_filtering and all_videos:
+            logger.info(f"Aplicando análise IA para {len(all_videos)} vídeos...")
             
-            # Cache video
+            # Analisar os primeiros vídeos com IA (limite para não gastar muito)
+            for video in all_videos[:30]:
+                video_data = {
+                    "video_id": video.video_id,
+                    "title": video.title,
+                    "description": video.description,
+                    "channel_title": video.channel_title
+                }
+                
+                analysis = await analyze_video_with_ai(video_data, search_criteria)
+                
+                # Aceitar vídeos com score >= 60
+                if analysis.get("relevance_score", 0) >= 60:
+                    results.append(video)
+                    logger.info(f"✓ Vídeo aceito: {video.title[:50]}... (score: {analysis['relevance_score']})")
+                else:
+                    logger.info(f"✗ Vídeo rejeitado: {video.title[:50]}... (score: {analysis['relevance_score']})")
+                
+                # Parar quando tiver resultados suficientes
+                if len(results) >= search_req.max_results:
+                    break
+        else:
+            # Sem filtros específicos, retorna todos
+            results = all_videos[:search_req.max_results]
+        
+        # Cache videos
+        for video in results:
             video_doc = video.model_dump()
             video_doc["cached_at"] = datetime.now(timezone.utc)
             await db.video_cache.update_one(
