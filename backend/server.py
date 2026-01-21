@@ -240,6 +240,113 @@ class SearchHistoryItem(BaseModel):
     created_at: datetime
 
 # Helper functions
+
+
+# Email Configuration
+SMTP_SERVER = "smtp.gmail.com"
+SMTP_PORT = 587
+SMTP_USER = os.environ.get('SMTP_USER', '')
+SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD', '')
+
+# Scheduler for automated reports
+scheduler = AsyncIOScheduler()
+
+async def generate_users_csv() -> str:
+    """Generate CSV with all users data"""
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # Headers
+    writer.writerow([
+        'Nome', 'Email', 'Nome Completo', 'Idade', 'Endereço', 
+        'Cidade', 'Estado', 'País', 'Time', 'Data Cadastro',
+        'Total de Buscas', 'Última Busca'
+    ])
+    
+    # Get all users with profiles and searches
+    pipeline = [
+        {"$lookup": {"from": "user_profiles", "localField": "user_id", "foreignField": "user_id", "as": "profile"}},
+        {"$unwind": {"path": "$profile", "preserveNullAndEmptyArrays": True}},
+        {"$lookup": {"from": "search_history", "localField": "user_id", "foreignField": "user_id", "as": "searches"}},
+        {"$project": {"_id": 0, "password": 0}}
+    ]
+    
+    users = await db.users.aggregate(pipeline).to_list(10000)
+    
+    for user in users:
+        profile = user.get('profile', {})
+        searches = user.get('searches', [])
+        last_search = searches[-1]['created_at'] if searches else None
+        
+        writer.writerow([
+            user.get('name', ''),
+            user.get('email', ''),
+            profile.get('full_name', ''),
+            profile.get('age', ''),
+            profile.get('address', ''),
+            profile.get('city', ''),
+            profile.get('state', ''),
+            profile.get('country', ''),
+            profile.get('favorite_team', ''),
+            user.get('created_at', '').isoformat() if user.get('created_at') else '',
+            len(searches),
+            last_search.isoformat() if last_search else ''
+        ])
+    
+    return output.getvalue()
+
+async def send_report_email(email_to: str, csv_content: str):
+    """Send CSV report via email"""
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = SMTP_USER
+        msg['To'] = email_to
+        msg['Subject'] = f'Relatório de Usuários - Olha o Gol - {datetime.now().strftime("%d/%m/%Y")}'
+        
+        body = f"""
+        Olá!
+        
+        Segue em anexo o relatório de usuários do sistema Olha o Gol.
+        
+        Data do relatório: {datetime.now().strftime("%d/%m/%Y %H:%M")}
+        
+        Atenciosamente,
+        Sistema Olha o Gol
+        """
+        
+        msg.attach(MIMEText(body, 'plain'))
+        
+        # Attach CSV
+        attachment = MIMEBase('application', 'octet-stream')
+        attachment.set_payload(csv_content.encode('utf-8'))
+        encoders.encode_base64(attachment)
+        attachment.add_header(
+            'Content-Disposition',
+            f'attachment; filename=relatorio_usuarios_{datetime.now().strftime("%Y%m%d")}.csv'
+        )
+        msg.attach(attachment)
+        
+        # Send email
+        await aiosmtplib.send(
+            msg,
+            hostname=SMTP_SERVER,
+            port=SMTP_PORT,
+            username=SMTP_USER,
+            password=SMTP_PASSWORD,
+            start_tls=True
+        )
+        
+        logger.info(f"Email sent successfully to {email_to}")
+        return True
+    except Exception as e:
+        logger.error(f"Error sending email: {e}")
+        return False
+
+async def scheduled_report_job(email_to: str):
+    """Job to send scheduled report"""
+    csv_content = await generate_users_csv()
+    await send_report_email(email_to, csv_content)
+
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
 
