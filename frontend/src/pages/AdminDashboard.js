@@ -26,6 +26,8 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [resetPasswordUser, setResetPasswordUser] = useState(null);
   const [newPassword, setNewPassword] = useState('');
+  const [showSettings, setShowSettings] = useState(false);
+  const [adminWhatsApp, setAdminWhatsApp] = useState('');
 
   useEffect(() => {
     if (!user) {
@@ -56,12 +58,16 @@ const AdminDashboard = () => {
     try {
       const token = localStorage.getItem('token');
       
-      const [statsResponse, usersResponse] = await Promise.all([
+      const [statsResponse, usersResponse, profileResponse] = await Promise.all([
         axios.get(`${API}/admin/dashboard`, {
           withCredentials: true,
           headers: { Authorization: `Bearer ${token}` }
         }),
         axios.get(`${API}/admin/users`, {
+          withCredentials: true,
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get(`${API}/profile`, {
           withCredentials: true,
           headers: { Authorization: `Bearer ${token}` }
         })
@@ -70,6 +76,7 @@ const AdminDashboard = () => {
       setStats(statsResponse.data);
       setUsers(usersResponse.data);
       setFilteredUsers(usersResponse.data);
+      setAdminWhatsApp(profileResponse.data?.whatsapp_number || '');
     } catch (error) {
       toast.error('Erro ao carregar dados');
     } finally {
@@ -116,6 +123,24 @@ const AdminDashboard = () => {
       loadData();
     } catch (error) {
       toast.error('Erro ao deletar usuário');
+    }
+  };
+
+  const handleSaveWhatsApp = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(
+        `${API}/profile`,
+        { whatsapp_number: adminWhatsApp },
+        {
+          withCredentials: true,
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      toast.success('Número do WhatsApp atualizado!');
+      setShowSettings(false);
+    } catch (error) {
+      toast.error('Erro ao atualizar WhatsApp');
     }
   };
 
