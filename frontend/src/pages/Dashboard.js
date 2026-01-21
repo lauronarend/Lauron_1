@@ -490,43 +490,78 @@ const Dashboard = () => {
         )}
       </div>
 
-      {/* Video Modal */}
+      {/* Video Modal - MAIOR */}
       <Dialog open={!!selectedVideo} onOpenChange={() => setSelectedVideo(null)}>
-        <DialogContent className="max-w-4xl bg-[#18181b] border-[#27272a]">
-          <DialogHeader>
-            <DialogTitle className="text-white" style={{ fontFamily: '"Barlow Condensed", sans-serif' }}>
-              {selectedVideo?.title}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="aspect-video w-full">
-            {selectedVideo && (
-              <iframe
-                width="100%"
-                height="100%"
-                src={`https://www.youtube.com/embed/${selectedVideo.video_id}?autoplay=1`}
-                title={selectedVideo.title}
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            )}
-          </div>
-          <div className="mt-4">
-            <p className="text-gray-400 text-sm" style={{ fontFamily: '"Chivo", sans-serif' }}>
-              Canal: {selectedVideo?.channel_title}
-            </p>
-            <p className="text-gray-400 text-sm mt-2" style={{ fontFamily: '"Chivo", sans-serif' }}>
-              {selectedVideo?.description?.substring(0, 200)}...
-            </p>
-            <a 
-              href={`https://www.youtube.com/watch?v=${selectedVideo?.video_id}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block mt-4 text-sm"
-              style={{ color: currentKit?.primary || '#FFDF00' }}
-            >
-              Abrir no YouTube →
-            </a>
+        <DialogContent className="max-w-7xl w-[95vw] bg-[#18181b] border-[#27272a] p-0">
+          <div className="relative">
+            {/* Video Player */}
+            <div className="aspect-video w-full bg-black">
+              {selectedVideo && (
+                <iframe
+                  width="100%"
+                  height="100%"
+                  src={`https://www.youtube.com/embed/${selectedVideo.video_id}?autoplay=1&rel=0`}
+                  title={selectedVideo.title}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                  className="w-full h-full"
+                  style={{ minHeight: '70vh' }}
+                />
+              )}
+            </div>
+            
+            {/* Video Info */}
+            <div className="p-6 bg-[#18181b]">
+              <DialogHeader>
+                <DialogTitle className="text-white text-2xl mb-4" style={{ fontFamily: '"Barlow Condensed", sans-serif' }}>
+                  {selectedVideo?.title}
+                </DialogTitle>
+              </DialogHeader>
+              
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-10 h-10 rounded-full bg-[#27272a] flex items-center justify-center">
+                      <span className="text-white font-bold">
+                        {selectedVideo?.channel_title?.charAt(0)}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-white font-medium" style={{ fontFamily: '"Chivo", sans-serif' }}>
+                        {selectedVideo?.channel_title}
+                      </p>
+                      <p className="text-gray-400 text-sm">
+                        Publicado em {selectedVideo?.published_at ? new Date(selectedVideo.published_at).toLocaleDateString('pt-BR') : ''}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                {selectedVideo?.description && (
+                  <div className="bg-[#27272a] p-4 rounded">
+                    <p className="text-gray-300 text-sm whitespace-pre-wrap" style={{ fontFamily: '"Chivo", sans-serif' }}>
+                      {selectedVideo.description.substring(0, 500)}
+                      {selectedVideo.description.length > 500 && '...'}
+                    </p>
+                  </div>
+                )}
+                
+                <a 
+                  href={`https://www.youtube.com/watch?v=${selectedVideo?.video_id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded"
+                  style={{ 
+                    background: currentKit?.primary || '#FFDF00',
+                    color: currentKit?.primaryForeground || '#009C3B'
+                  }}
+                >
+                  <Play className="h-5 w-5" />
+                  Abrir no YouTube
+                </a>
+              </div>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
