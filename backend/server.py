@@ -104,27 +104,24 @@ async def create_admin_user():
             "name": "Administrador",
             "password": hashed_pwd,
             "picture": None,
-
-    # Set admin WhatsApp number
-    admin_user = await db.users.find_one({"email": admin_email})
-    if admin_user:
-        await db.user_profiles.update_one(
-            {"user_id": admin_user["user_id"]},
-            {"$set": {
-                "user_id": admin_user["user_id"],
-                "whatsapp_number": "5511941863112",
-                "updated_at": datetime.now(timezone.utc)
-            }},
-            upsert=True
-        )
-        logger.info(f"Admin WhatsApp set to: 5511941863112")
-
             "is_admin": True,
             "created_at": datetime.now(timezone.utc)
         }
         
         await db.users.insert_one(admin_doc)
         logger.info(f"Admin user created: {admin_email} / {admin_password}")
+        
+        # Set admin WhatsApp number
+        await db.user_profiles.update_one(
+            {"user_id": user_id},
+            {"$set": {
+                "user_id": user_id,
+                "whatsapp_number": "5511941863112",
+                "updated_at": datetime.now(timezone.utc)
+            }},
+            upsert=True
+        )
+        logger.info(f"Admin WhatsApp set to: 5511941863112")
 
     own_goal: bool = False
     only_this_player: bool = False
