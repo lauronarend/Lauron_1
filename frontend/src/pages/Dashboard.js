@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import ProfileModal from '../components/ProfileModal';
+import Logo from '../components/Logo';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -143,13 +144,7 @@ const Dashboard = () => {
       <header className="border-b border-[#27272a] bg-[#09090b] sticky top-0 z-40">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-black" style={{ 
-              fontFamily: '"Barlow Condensed", sans-serif',
-              color: currentKit?.primary || '#FFDF00',
-              letterSpacing: '-0.02em'
-            }}>
-              GOLTUBE
-            </h1>
+            <Logo size="small" />
             <div className="flex items-center gap-4">
               <Button
                 data-testid="history-button"

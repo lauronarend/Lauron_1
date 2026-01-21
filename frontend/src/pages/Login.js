@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { toast } from 'sonner';
 import { FcGoogle } from 'react-icons/fc';
+import Logo from '../components/Logo';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -57,14 +58,8 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center p-4" style={{ background: '#09090b' }}>
       <div className="w-full max-width-md">
         <div className="text-center mb-8">
-          <h1 className="text-5xl font-black mb-2" style={{ 
-            fontFamily: '"Barlow Condensed", sans-serif',
-            color: currentKit?.primary || '#FFDF00',
-            letterSpacing: '-0.02em'
-          }}>
-            GOLTUBE
-          </h1>
-          <p className="text-gray-400" style={{ fontFamily: '"Chivo", sans-serif' }}>
+          <Logo size="normal" animated={false} />
+          <p className="text-gray-400 mt-4" style={{ fontFamily: '"Chivo", sans-serif' }}>
             Encontre os melhores gols do futebol mundial
           </p>
         </div>

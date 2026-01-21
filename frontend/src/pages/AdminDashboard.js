@@ -10,6 +10,7 @@ import { Label } from '../components/ui/label';
 import { ArrowLeft, Users, Search as SearchIcon, TrendingUp, BarChart3, Key, Trash2, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
+import Logo from '../components/Logo';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -166,13 +167,10 @@ const AdminDashboard = () => {
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              <h1 className="text-3xl font-black" style={{ 
-                fontFamily: '"Barlow Condensed", sans-serif',
-                color: currentKit?.primary || '#FFDF00',
-                letterSpacing: '-0.02em'
-              }}>
+              <Logo size="small" />
+              <h2 className="text-2xl font-black text-white ml-4" style={{ fontFamily: '"Barlow Condensed", sans-serif' }}>
                 PAINEL ADMINISTRATIVO
-              </h1>
+              </h2>
             </div>
             <Button
               onClick={() => setShowSettings(true)}
