@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { Toaster } from './components/ui/sonner';
+import WhatsAppButton from './components/WhatsAppButton';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -35,6 +36,7 @@ function App() {
         <AuthProvider>
           <div className="App">
             <AppRouter />
+            <WhatsAppButton />
             <Toaster position="top-right" />
           </div>
         </AuthProvider>
