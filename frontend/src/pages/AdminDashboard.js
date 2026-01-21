@@ -446,6 +446,48 @@ const AdminDashboard = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Settings Dialog */}
+      <Dialog open={showSettings} onOpenChange={setShowSettings}>
+        <DialogContent className="bg-[#18181b] border-[#27272a]">
+          <DialogHeader>
+            <DialogTitle className="text-white text-2xl" style={{ fontFamily: '"Barlow Condensed", sans-serif' }}>
+              CONFIGURAÇÕES DO ADMINISTRADOR
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="whatsapp" className="text-white">Número do WhatsApp (com código do país)</Label>
+              <Input
+                id="whatsapp"
+                type="text"
+                placeholder="Ex: 5511941863112"
+                className="bg-[#27272a] border-[#3f3f46] text-white h-12"
+                value={adminWhatsApp}
+                onChange={(e) => setAdminWhatsApp(e.target.value)}
+              />
+              <p className="text-xs text-gray-400">
+                Este número aparecerá no botão flutuante de WhatsApp em todo o site
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="ghost"
+              onClick={() => setShowSettings(false)}
+              className="text-gray-400"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleSaveWhatsApp}
+              style={{ background: currentKit?.primary || '#FFDF00', color: currentKit?.primaryForeground || '#009C3B' }}
+            >
+              Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
