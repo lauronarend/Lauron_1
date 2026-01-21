@@ -288,6 +288,21 @@ async def process_session(request: Request, response: Response):
             "user_id": user_id,
             "email": email,
             "name": name,
+
+
+@api_router.get("/whatsapp")
+async def get_admin_whatsapp():
+    """Get admin WhatsApp number (public route)"""
+    admin = await db.users.find_one({"is_admin": True})
+    if not admin:
+        return {"whatsapp_number": "5511941863112"}
+    
+    profile = await db.user_profiles.find_one({"user_id": admin["user_id"]}, {"_id": 0})
+    if profile and profile.get("whatsapp_number"):
+        return {"whatsapp_number": profile["whatsapp_number"]}
+    
+    return {"whatsapp_number": "5511941863112"}
+
             "picture": picture,
             "is_admin": False,
             "created_at": datetime.now(timezone.utc)
