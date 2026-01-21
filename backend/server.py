@@ -142,6 +142,39 @@ async def create_admin_user():
             upsert=True
         )
         logger.info(f"Admin WhatsApp set to: 5511941863112")
+    
+    # Start scheduler
+    scheduler.start()
+    logger.info("Scheduler started")
+    
+    # Load existing email settings and schedule jobs
+    settings = await db.admin_settings.find_one({"setting_type": "email_reports"})
+    if settings:
+        email_to = settings.get('email_to')
+        if settings.get('send_daily') and email_to:
+            scheduler.add_job(
+                scheduled_report_job,
+                CronTrigger(hour=23, minute=59),
+                args=[email_to],
+                id='report_daily',
+                replace_existing=True
+            )
+        if settings.get('send_weekly') and email_to:
+            scheduler.add_job(
+                scheduled_report_job,
+                CronTrigger(day_of_week='sun', hour=23, minute=59),
+                args=[email_to],
+                id='report_weekly',
+                replace_existing=True
+            )
+        if settings.get('send_monthly') and email_to:
+            scheduler.add_job(
+                scheduled_report_job,
+                CronTrigger(day='last', hour=23, minute=59),
+                args=[email_to],
+                id='report_monthly',
+                replace_existing=True
+            )
 
     own_goal: bool = False
     only_this_player: bool = False
