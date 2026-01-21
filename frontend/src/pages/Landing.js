@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/ui/button';
 import { Search, PlayCircle, TrendingUp, History } from 'lucide-react';
 import { motion } from 'framer-motion';
+import Logo from '../components/Logo';
 
 const Landing = () => {
   const navigate = useNavigate();
