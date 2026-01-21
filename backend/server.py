@@ -39,7 +39,7 @@ YOUTUBE_API_VERSION = "v3"
 
 # OpenAI for intelligent filtering
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', 'sk-emergent-3Aa6d29C6Ab8395C02')
-openai_client = OpenAI(api_key=OPENAI_API_KEY, base_url="https://api.openai.com/v1")
+openai_client = OpenAI(api_key=OPENAI_API_KEY, base_url="https://api.emergentagi.com/v1")
 
 # Create the main app
 app = FastAPI()
@@ -140,8 +140,10 @@ async def create_admin_user():
 async def get_video_transcript(video_id: str) -> str:
     """Get video transcript/captions"""
     try:
-        transcript_list = YouTubeTranscriptApi.get_transcript(video_id, languages=['pt', 'en', 'es'])
-        transcript_text = " ".join([item['text'] for item in transcript_list[:50]])  # First 50 lines
+        transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
+        transcript = transcript_list.find_transcript(['pt', 'en', 'es'])
+        transcript_data = transcript.fetch()
+        transcript_text = " ".join([item['text'] for item in transcript_data[:50]])  # First 50 lines
         return transcript_text[:2000]  # Limit to 2000 chars
     except Exception as e:
         logger.warning(f"Could not get transcript for {video_id}: {e}")
