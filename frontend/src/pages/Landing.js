@@ -45,13 +45,7 @@ const Landing = () => {
       {/* Header */}
       <header className="relative z-10 container mx-auto px-4 py-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-4xl font-black" style={{ 
-            fontFamily: '"Barlow Condensed", sans-serif',
-            color: currentKit?.primary || '#FFDF00',
-            letterSpacing: '-0.02em'
-          }}>
-            GOLTUBE
-          </h1>
+          <Logo size="small" />
           <div className="flex gap-3">
             <Link to="/login">
               <Button 
