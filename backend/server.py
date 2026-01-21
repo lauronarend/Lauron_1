@@ -136,6 +136,87 @@ async def create_admin_user():
     only_this_player: bool = False
     max_results: int = 20
 
+
+async def get_video_transcript(video_id: str) -> str:
+    """Get video transcript/captions"""
+    try:
+        transcript_list = YouTubeTranscriptApi.get_transcript(video_id, languages=['pt', 'en', 'es'])
+        transcript_text = " ".join([item['text'] for item in transcript_list[:50]])  # First 50 lines
+        return transcript_text[:2000]  # Limit to 2000 chars
+    except Exception as e:
+        logger.warning(f"Could not get transcript for {video_id}: {e}")
+        return ""
+
+async def analyze_video_with_ai(video_data: dict, search_criteria: dict) -> dict:
+    """Use AI to analyze if video matches search criteria"""
+    try:
+        # Get transcript
+        transcript = await get_video_transcript(video_data['video_id'])
+        
+        # Build analysis prompt
+        criteria_text = []
+        if search_criteria.get('player'):
+            criteria_text.append(f"Jogador: {search_criteria['player']}")
+        if search_criteria.get('team'):
+            criteria_text.append(f"Time: {search_criteria['team']}")
+        if search_criteria.get('goal_type'):
+            criteria_text.append(f"Tipo de gol: {search_criteria['goal_type']}")
+        if search_criteria.get('year'):
+            criteria_text.append(f"Ano: {search_criteria['year']}")
+        if search_criteria.get('championship'):
+            criteria_text.append(f"Campeonato: {search_criteria['championship']}")
+        
+        flags = []
+        if search_criteria.get('historic_goal'):
+            flags.append("gol histórico/lendário")
+        if search_criteria.get('beautiful_goal'):
+            flags.append("gol bonito/espetacular")
+        if search_criteria.get('ex_goal'):
+            flags.append("gol contra ex-time")
+        if search_criteria.get('own_goal'):
+            flags.append("gol contra")
+        if search_criteria.get('only_this_player'):
+            flags.append(f"vídeo exclusivamente sobre {search_criteria.get('player')}")
+        
+        if flags:
+            criteria_text.append(f"Características especiais: {', '.join(flags)}")
+        
+        prompt = f"""Analise se este vídeo do YouTube corresponde aos critérios de busca.
+
+Título: {video_data['title']}
+Descrição: {video_data['description'][:500]}
+Canal: {video_data['channel_title']}
+Transcrição: {transcript[:1000] if transcript else 'Não disponível'}
+
+Critérios de busca:
+{chr(10).join(criteria_text)}
+
+Responda APENAS com um JSON no formato:
+{{"relevance_score": 0-100, "matches": true/false, "reason": "breve explicação"}}
+
+Score 80+ = corresponde perfeitamente
+Score 50-79 = corresponde parcialmente
+Score 0-49 = não corresponde"""
+
+        response = openai_client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "Você é um especialista em futebol que analisa vídeos de gols."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.3,
+            max_tokens=150
+        )
+        
+        import json
+        result = json.loads(response.choices[0].message.content)
+        return result
+    
+    except Exception as e:
+        logger.error(f"AI analysis error: {e}")
+        return {"relevance_score": 50, "matches": True, "reason": "Análise AI falhou, mantendo vídeo"}
+
+
 class SearchHistoryItem(BaseModel):
     model_config = ConfigDict(extra="ignore")
     history_id: str
