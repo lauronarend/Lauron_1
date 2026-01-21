@@ -291,7 +291,7 @@ const Dashboard = () => {
                   checked={historicGoal} 
                   onCheckedChange={setHistoricGoal}
                   data-testid="historic-goal-checkbox"
-                  className="border-gray-400"
+                  className="border-white data-[state=checked]:bg-white data-[state=checked]:text-black"
                 />
                 <Label htmlFor="historic" className="text-white text-sm cursor-pointer">
                   Gol Histórico
@@ -303,7 +303,7 @@ const Dashboard = () => {
                   checked={beautifulGoal} 
                   onCheckedChange={setBeautifulGoal}
                   data-testid="beautiful-goal-checkbox"
-                  className="border-gray-400"
+                  className="border-white data-[state=checked]:bg-white data-[state=checked]:text-black"
                 />
                 <Label htmlFor="beautiful" className="text-white text-sm cursor-pointer">
                   Gol Mais Bonito
@@ -315,7 +315,7 @@ const Dashboard = () => {
                   checked={exGoal} 
                   onCheckedChange={setExGoal}
                   data-testid="ex-goal-checkbox"
-                  className="border-gray-400"
+                  className="border-white data-[state=checked]:bg-white data-[state=checked]:text-black"
                 />
                 <Label htmlFor="ex" className="text-white text-sm cursor-pointer">
                   Gol do Ex
@@ -327,7 +327,7 @@ const Dashboard = () => {
                   checked={ownGoal} 
                   onCheckedChange={setOwnGoal}
                   data-testid="own-goal-checkbox"
-                  className="border-gray-400"
+                  className="border-white data-[state=checked]:bg-white data-[state=checked]:text-black"
                 />
                 <Label htmlFor="own" className="text-white text-sm cursor-pointer">
                   Gol Contra
@@ -339,7 +339,7 @@ const Dashboard = () => {
                   checked={onlyThisPlayer} 
                   onCheckedChange={setOnlyThisPlayer}
                   data-testid="only-player-checkbox"
-                  className="border-gray-400"
+                  className="border-white data-[state=checked]:bg-white data-[state=checked]:text-black"
                 />
                 <Label htmlFor="onlyPlayer" className="text-white text-sm cursor-pointer">
                   Apenas Esse Jogador
