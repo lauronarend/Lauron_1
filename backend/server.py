@@ -84,6 +84,9 @@ class SearchRequest(BaseModel):
     historic_goal: bool = False
     beautiful_goal: bool = False
     ex_goal: bool = False
+    own_goal: bool = False
+    only_this_player: bool = False
+    max_results: int = 20
 
 
 # Create admin user on startup
