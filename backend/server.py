@@ -15,6 +15,8 @@ from jose import jwt, JWTError
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 import httpx
+from youtube_transcript_api import YouTubeTranscriptApi
+from openai import OpenAI
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -34,6 +36,10 @@ security = HTTPBearer(auto_error=False)
 YOUTUBE_API_KEY = os.environ.get('YOUTUBE_API_KEY', 'AIzaSyDummyKeyForDevelopment')
 YOUTUBE_API_SERVICE_NAME = "youtube"
 YOUTUBE_API_VERSION = "v3"
+
+# OpenAI for intelligent filtering
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', 'sk-emergent-3Aa6d29C6Ab8395C02')
+openai_client = OpenAI(api_key=OPENAI_API_KEY, base_url="https://api.openai.com/v1")
 
 # Create the main app
 app = FastAPI()
