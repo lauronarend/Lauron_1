@@ -157,6 +157,69 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleExportCSV = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API}/admin/export-csv`, {
+        withCredentials: true,
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `usuarios_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      
+      toast.success('CSV baixado com sucesso!');
+    } catch (error) {
+      toast.error('Erro ao exportar CSV');
+    }
+  };
+
+  const handleSaveEmailSettings = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(
+        `${API}/admin/email-settings`,
+        emailSettings,
+        {
+          withCredentials: true,
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      toast.success('Configurações de email salvas!');
+      setShowEmailSettings(false);
+    } catch (error) {
+      toast.error('Erro ao salvar configurações');
+    }
+  };
+
+  const handleSendNow = async () => {
+    if (!emailSettings.email_to) {
+      toast.error('Por favor, preencha o email primeiro');
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(
+        `${API}/admin/send-report-now`,
+        { email_to: emailSettings.email_to },
+        {
+          withCredentials: true,
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      toast.success('Relatório enviado por email!');
+    } catch (error) {
+      toast.error('Erro ao enviar email');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#09090b' }}>
