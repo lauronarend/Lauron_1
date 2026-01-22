@@ -533,6 +533,15 @@ async def process_session(request: Request, response: Response):
             "created_at": datetime.now(timezone.utc)
         }
         await db.users.insert_one(user_doc)
+        
+        # Create profile with Google data
+        profile_doc = {
+            "user_id": user_id,
+            "full_name": name,  # Use Google name as full name
+            "updated_at": datetime.now(timezone.utc)
+        }
+        await db.user_profiles.insert_one(profile_doc)
+        logger.info(f"Created profile for Google user: {email}")
     
     # Store session
     session_doc = {
