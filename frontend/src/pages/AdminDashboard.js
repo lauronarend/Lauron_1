@@ -7,7 +7,7 @@ import { Input } from '../components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../components/ui/dialog';
 import { Label } from '../components/ui/label';
-import { ArrowLeft, Users, Search as SearchIcon, TrendingUp, BarChart3, Key, Trash2, Settings } from 'lucide-react';
+import { ArrowLeft, Users, Search as SearchIcon, TrendingUp, BarChart3, Key, Trash2, Settings, Download, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
 import Logo from '../components/Logo';
@@ -29,6 +29,13 @@ const AdminDashboard = () => {
   const [newPassword, setNewPassword] = useState('');
   const [showSettings, setShowSettings] = useState(false);
   const [adminWhatsApp, setAdminWhatsApp] = useState('');
+  const [showEmailSettings, setShowEmailSettings] = useState(false);
+  const [emailSettings, setEmailSettings] = useState({
+    email_to: '',
+    send_daily: false,
+    send_weekly: false,
+    send_monthly: false
+  });
 
   useEffect(() => {
     if (!user) {
@@ -59,7 +66,7 @@ const AdminDashboard = () => {
     try {
       const token = localStorage.getItem('token');
       
-      const [statsResponse, usersResponse, profileResponse] = await Promise.all([
+      const [statsResponse, usersResponse, profileResponse, emailSettingsResponse] = await Promise.all([
         axios.get(`${API}/admin/dashboard`, {
           withCredentials: true,
           headers: { Authorization: `Bearer ${token}` }
@@ -71,6 +78,10 @@ const AdminDashboard = () => {
         axios.get(`${API}/profile`, {
           withCredentials: true,
           headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get(`${API}/admin/email-settings`, {
+          withCredentials: true,
+          headers: { Authorization: `Bearer ${token}` }
         })
       ]);
 
@@ -78,6 +89,7 @@ const AdminDashboard = () => {
       setUsers(usersResponse.data);
       setFilteredUsers(usersResponse.data);
       setAdminWhatsApp(profileResponse.data?.whatsapp_number || '');
+      setEmailSettings(emailSettingsResponse.data);
     } catch (error) {
       toast.error('Erro ao carregar dados');
     } finally {
